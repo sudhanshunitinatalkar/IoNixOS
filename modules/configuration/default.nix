@@ -1,5 +1,5 @@
 {
-  flake.nixosModules.configuration = { inputs, pkgs, ... }:
+  flake.nixosModules.configuration = { inputs, pkgs, lib, ... }:
   {
 
     nix.settings = 
@@ -14,18 +14,13 @@
     {
       kernelPackages = pkgs.linuxPackages_rpi02w;
       loader.grub.enable = false;
+      supportedFilesystems = lib.mkForce [ "vfat" "ext4" ];
+      loader.generic-extlinux-compatible.enable = true;
+      initrd.includeDefaultModules = false;
+      initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
     };
 
     hardware.bluetooth.enable = true;
-
-    networking =
-    {
-      hostName = "ionix";
-      networkmanager.enable = true;
-      firewall.enable = false;
-      # firewall.allowedTCPPorts = [ ];
-      # firewall.allowedUDPPorts = [ ];
-    };
 
     users.groups.gpio = {};
       
@@ -50,6 +45,11 @@
     services =
     {
       openssh.enable = true;
+      udev.extraRules = ''
+        SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"
+        SUBSYSTEM=="gpiodev", GROUP="gpio", MODE="0660"
+        KERNEL=="gpiochip*", GROUP="gpio", MODE="0660"
+        '';
     };
 
     environment.systemPackages = with pkgs;
