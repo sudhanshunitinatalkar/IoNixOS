@@ -3,7 +3,7 @@
 # protos_stfs
 # iot
 
-nixos-rebuild switch --flake .#protos --target-host datalogger@192.168.57.7 --sudo --ask-sudo-password
+nixos-rebuild switch --flake .#ionix --target-host ionix@192.168.57.7 --sudo --ask-sudo-password
 
 
 grep . /proc/device-tree/soc/i2c@*/status
@@ -63,3 +63,4 @@ echo "✅ Update Published! Devices will pull it within 1 minute."
 
 
 nix build .#nixosConfigurations.ionix.config.system.build.sdImage
+k

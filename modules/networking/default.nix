@@ -15,9 +15,9 @@
         networkmanager = {    
         ensureProfiles.environmentFiles = [ "/etc/wifi.env" ];
         ensureProfiles.profiles = {
-            "datalogger" = {
+            "ionix_ap" = {
             connection = {
-                id = "ionix";
+                id = "ionix_ap";
                 type = "wifi";
                 interface-name = "uap0";
                 autoconnect = true;
@@ -30,7 +30,7 @@
             };
             wifi-security = {
                 key-mgmt = "wpa-psk";
-                psk = "ionix";
+                psk = "ionix_577";
             };
             ipv4 = {
                 method = "shared";
@@ -50,7 +50,7 @@
         script = ''
         if [ ! -f /etc/wifi.env ]; then
             CPUID=$(${pkgs.coreutils}/bin/tr -d '\0' < /proc/device-tree/serial-number | ${pkgs.coreutils}/bin/tail -c 9)
-            echo "DEVICE_SSID=''${CPUID}_577" > /etc/wifi.env
+            echo "DEVICE_SSID=''${CPUID}_ionix" > /etc/wifi.env
         fi
         '';
     };

@@ -5,10 +5,17 @@
     nix.settings = 
     {
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "root" "sudha" ];
+      trusted-users = [ "root" "ionix" ];
+      
     };
     system.stateVersion = "25.11";
+
     nixpkgs.config.allowUnfree = true;
+    nixpkgs.overlays = [
+      (final: prev: {
+        makeModulesClosure = x: prev.makeModulesClosure (x // { allowMissing = true; });
+      })
+    ];
 
     boot =
     {
@@ -16,8 +23,6 @@
       loader.grub.enable = false;
       supportedFilesystems = lib.mkForce [ "vfat" "ext4" ];
       loader.generic-extlinux-compatible.enable = true;
-      initrd.includeDefaultModules = false;
-      initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
     };
 
     hardware.bluetooth.enable = true;
