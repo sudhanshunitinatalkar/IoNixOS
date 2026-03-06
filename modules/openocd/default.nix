@@ -16,8 +16,8 @@
             ${pkgs.openocd}/bin/openocd \
             -c "bindto 0.0.0.0" \
             -c "adapter driver linuxgpiod" \
-            -c "adapter gpio swdio 19" \
-            -c "adapter gpio swclk 26" \
+            -c "adapter gpio swdio 19 -chip 0" \
+            -c "adapter gpio swclk 26 -chip 0" \
             -c "transport select swd" \
             -c "noinit"
         '';
