@@ -17,12 +17,25 @@
       })
     ];
 
-    boot =
-    {
+   boot = {
       kernelPackages = pkgs.linuxPackages_rpi02w;
       loader.grub.enable = false;
       supportedFilesystems = lib.mkForce [ "vfat" "ext4" ];
       loader.generic-extlinux-compatible.enable = true;
+      
+      # Completely silence the initramfs boot stage
+      initrd.verbose = false;
+      
+      kernelParams = [
+        "fbcon=map:2"                   # KEEP WHICHEVER NUMBER WORKED!
+        "quiet"                         # Suppress kernel logs
+        "loglevel=0"                    # Suppress all but emergency panics
+        "systemd.show_status=false"     # Stop systemd's [ OK ] messages
+        "rd.systemd.show_status=false"  # Stop systemd messages in initrd
+        "rd.udev.log_level=0"           # Silence device manager logs
+      ];
+      
+      consoleLogLevel = 0; 
     };
 
     hardware.bluetooth.enable = true;
@@ -76,11 +89,10 @@
     ];
 
     i18n.defaultLocale = "en_US.UTF-8";
-    console =
-    {
-      font = "Lat2-Terminus16";
+    console = {
+      font = "${./tom-thumb.psf}"; 
       keyMap = "us";
-    };   
+    };  
 
   };
 }

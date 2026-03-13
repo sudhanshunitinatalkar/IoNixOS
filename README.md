@@ -64,3 +64,14 @@ echo "✅ Update Published! Devices will pull it within 1 minute."
 
 nix build .#nixosConfigurations.ionix.config.system.build.sdImage
 k
+
+
+SDA / D1 / MOSI: Must connect to RPi Pin 19 (GPIO 10). Do not connect to I2C SDA.
+
+SCK / D0 / CLK: Must connect to RPi Pin 23 (GPIO 11). Do not connect to I2C SCL.
+
+RES / RST: Must connect to RPi Pin 18 (GPIO 24).
+
+DC / A0: Must connect to RPi Pin 22 (GPIO 25).
+
+CS / CE: Must connect to RPi Pin 24 (GPIO 8).
