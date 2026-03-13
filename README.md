@@ -1,77 +1,62 @@
+# IoNix (internet of nix)
+
 # IoNixOS
 
-# protos_stfs
-# iot
+IoNixOS is a specialized NixOS distribution optimized for the Raspberry Pi Zero 2W, designed to function as a high-reliability, headless remote deployment and hardware debugging node. It leverages Nix Flakes for cross-compilation and state-managed configurations, providing an immutable environment for OpenOCD-based firmware injection and edge-AI execution.
 
-nixos-rebuild switch --flake .#ionix --target-host ionix@192.168.57.7 --sudo --ask-sudo-password
+## Key Features
 
+* **Immutable Infrastructure**: Fully declarative system state defined via Nix Flakes.
+* **Remote Hardware Bridging**: Pre-configured OpenOCD bridge for remote SWD/JTAG debugging over TCP.
+* **Optimized for ARMv8**: Custom kernel parameters and module blacklisting to maximize the 512MB RAM overhead of the RPi 02W.
+* **Automated Networking**: Dynamic SSID generation based on hardware CPU ID with automated uap0 virtual AP failover.
 
-grep . /proc/device-tree/soc/i2c@*/status
+## Technical Specifications
 
-lsmod | grep i2c
+| Component | Detail |
+| --- | --- |
+| **Target Architecture** | `aarch64-linux` |
+| **Base System** | NixOS Unstable (Nixpkgs) |
+| **Kernel Packages** | `linuxPackages_rpi02w` |
+| **SWD Interface** | Linux GPIOD (Pins 19/26) |
+| **Default IPv4** | `192.168.57.7/24` |
 
-ls -l /dev/i2c*
+## Deployment Workflow
 
-tr -d '\0' < /proc/device-tree/soc/i2c@7e804000/status
+### 1. Build and Provisioning
 
-      
-# Example flashing command (replace /dev/sdX with your actual SD card)
-sudo dd if=result/sd-image/nixos-sd-image-*.img of=/dev/sda bs=4M status=progress conv=fsyn
+As the Raspberry Pi Zero 2W lacks sufficient memory for local evaluation, the system image must be cross-compiled on a host machine:
 
-cachix watch-exec protosstfs -- nix build .#nixosConfigurations.protos.config.system.build.toplevel
-
-sudo nixos-rebuild switch --flake "git+https://b28f8ce79c48b7bd4433a75d70b0d87f3814c9f4@git.eltros.in/sudhanshu/datalogger_protos.git#protos"
-
-
-
-
-
-export CACHIX_ACTIVATE_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI3Y2QzZTkzMS0zNTBmLTQyOGMtOTY0NC1kOTQ2N2Q4YzRiOTAiLCJzY29wZXMiOiJhY3RpdmF0ZSJ9.LAuFUxdpxl7kMOCNgvyw6V0PxqNHXnrDRIhVn6GZ7cM
-
-nix build .#deploy
-
-cachix push protosstfs result
-
-cachix deploy activate result
-
-
-
-
-
-
-#!/usr/bin/env bash
-set -e
-
-echo "🔨 Building System (Laptop Side)..."
-# 1. Build the system locally
-nix build .#nixosConfigurations.protos.config.system.build.toplevel --system aarch64-linux
-
-echo "☁️ Uploading to Cache..."
-# 2. Upload binaries to Cachix
-cachix push protosstfs result
-
-echo "📝 Updating Pointer..."
-# 3. Write the new hash to the text file
-readlink -f result > current_system_hash.txt
-
-# 4. Publish the new pointer
-git add current_system_hash.txt
-git commit -m "Deploy: Update fleet to $(cat current_system_hash.txt)"
-git push origin main
-
-echo "✅ Update Published! Devices will pull it within 1 minute."
-
-
+```bash
+# Generate the bootable SD image
 nix build .#nixosConfigurations.ionix.config.system.build.sdImage
-k
 
+```
 
-SDA / D1 / MOSI: Must connect to RPi Pin 19 (GPIO 10). Do not connect to I2C SDA.
+### 2. Remote Configuration Management
 
-SCK / D0 / CLK: Must connect to RPi Pin 23 (GPIO 11). Do not connect to I2C SCL.
+Post-deployment updates are handled via `nixos-rebuild`, targeting the node over the management network. This avoids local resource exhaustion during system activation:
 
-RES / RST: Must connect to RPi Pin 18 (GPIO 24).
+```bash
+nixos-rebuild switch --flake .#ionix \
+  --target-host ionix@192.168.57.7 \
+  --sudo --ask-sudo-password
 
-DC / A0: Must connect to RPi Pin 22 (GPIO 25).
+```
 
-CS / CE: Must connect to RPi Pin 24 (GPIO 8).
+## Hardware Interfacing
+
+### OpenOCD Bridge
+
+The system initializes an OpenOCD server on boot, listening on ports `3333` (GDB), `4444` (Telnet), and `6666` (TCL). The default transport is configured for SWD via the following GPIO mapping:
+
+* **SWDIO**: GPIO 19
+* **SWCLK**: GPIO 26
+
+### Integrated Display (SSD1306)
+
+Hardware overlays are provided for SPI-based SSD1306 OLED displays, utilizing a custom device tree fragment for pin-muxing on GPIO 24 (Reset) and GPIO 25 (DC).
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0**. See the `LICENSE` file for full legal text.
