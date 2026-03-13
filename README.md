@@ -2,6 +2,8 @@
 
 # IoNixOS
 
+![IoNixOS Hardware Setup](./images/ionixos-hardware.jpg)
+
 IoNixOS is a specialized NixOS distribution optimized for the Raspberry Pi Zero 2W, designed to function as a high-reliability, headless remote deployment and hardware debugging node. It leverages Nix Flakes for cross-compilation and state-managed configurations, providing an immutable environment for OpenOCD-based firmware injection and edge-AI execution.
 
 ## Key Features
